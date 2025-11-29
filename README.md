@@ -9,7 +9,15 @@ Like 90's Tamagotchi, the purpose is to teach my son about the difficulties and 
 
 ## Development
 
-### VSCode plugins
+VSCode plugins:
 
 * [markdownlint](https://marketplace.visualstudio.com/items?itemName=DavidAnson.vscode-markdownlint)
 * [pico-vscode](https://marketplace.visualstudio.com/items?itemName=raspberry-pi.raspberry-pi-pico)
+
+Python setup:
+
+```shell
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+```
