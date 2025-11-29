@@ -1,0 +1,17 @@
+# RP2350 MCU Board, With 1.28inch Round Touch LCD
+
+<http://waveshare.com/wiki/RP2350-Touch-LCD-1.28>
+
+![intro](RP2350-Touch-LCD-1.28-details-intro.jpg)
+
+1. USB Type-C connector for program burning, USB 1.1 with device and host support
+1. ETA6098 high efficiency Lithium battery recharge manager
+1. RT9193-33PB 300mA low dropout, low noise, ultra-fast LDO
+1. W25Q128JVSIQ 16MB NOR-Flash
+1. RP2350 Dual-core and dual-architecture design, up to 150 MHz operating frequency
+1. QMI8658 6-axis IMU includes a 3-axis gyroscope and a 3-axis accelerometer.
+1. BOOT button Press it when resetting to enter download mode
+1. RESET button
+1. MX1.25 battery header MX1.25 2P connector, for 3.7V Lithium battery, supports charging and discharging
+
+![details](RP2350-Touch-LCD-1.28-details-11.jpg)
