@@ -21,9 +21,10 @@
 * Disconnect from the PC
 * Connect while holding down the `BOOT` button
 * Release the `BOOT` button, `RP2350` should appear as a USB device
-* Copy `WAVESHARE-RP2350-20250807-v1.26.0-16MB.uf2` to the device
+* Copy `WAVESHARE-RP2350-TOUCH-LCD-1.28.uf2` to the device
 * `RP2350` will then disappear
 * Disconnect and reconnect
+* **IMPORTANT**: only firmwares with LVGL compiled in would work!
 
 ## Programming
 

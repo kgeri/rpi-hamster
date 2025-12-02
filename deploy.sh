@@ -10,20 +10,23 @@ printf '\033[32mClean...\033[0m\n' >&2
 rm -rf "$BUILD_DIR"
 mkdir -p "$BUILD_DIR"
 
-for f in "$SRC_DIR"/*.py; do
-    name=$(basename "$f" .py)
-    if [ "$name" == "main" ]; then
-        continue
-    fi
-    printf "\033[32mCompiling $BUILD_DIR/$name.mpy\033[0m\n" >&2
-    mpy-cross "$f" -o "$BUILD_DIR/$name.mpy"
-done
-
-# Clearing the device and uploading
+# Clearing the device, compiling and uploading
 mpremote rm -rf :/ || true
+# Not compiling main.py, as it's expected by boot to be a .py file
 mpremote cp "$SRC_DIR/main.py" :/
-for f in "$BUILD_DIR"/*.mpy; do
-    mpremote cp "$f" :/
+for d in $(find "$SRC_DIR" -type d ! -name __pycache__); do
+    dir="${d#"$SRC_DIR"}"
+    mkdir -p $BUILD_DIR$dir
+    mpremote mkdir ":$dir" || true
+    
+    for f in "$d"/*.py; do
+        name=$(basename "$f" .py)
+        if [ "$name" == "main" ]; then
+            continue
+        fi
+        mpy-cross "$f" -o "$BUILD_DIR$dir/$name.mpy"
+        mpremote cp "$BUILD_DIR$dir/$name.mpy" ":$dir"
+    done
 done
 
 # Reset
