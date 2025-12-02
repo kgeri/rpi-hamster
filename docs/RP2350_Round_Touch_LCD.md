@@ -15,3 +15,17 @@
 1. MX1.25 battery header MX1.25 2P connector, for 3.7V Lithium battery, supports charging and discharging
 
 ![details](RP2350-Touch-LCD-1.28-details-11.jpg)
+
+## Firmware flashing
+
+* Disconnect from the PC
+* Connect while holding down the `BOOT` button
+* Release the `BOOT` button, `RP2350` should appear as a USB device
+* Copy `WAVESHARE-RP2350-20250807-v1.26.0-16MB.uf2` to the device
+* `RP2350` will then disappear
+* Disconnect and reconnect
+
+## Programming
+
+* [Reset and Boot Sequence](https://docs.micropython.org/en/latest/reference/reset_boot.html)
+* [RP2 Quick Reference](https://docs.micropython.org/en/latest/rp2/quickref.html)

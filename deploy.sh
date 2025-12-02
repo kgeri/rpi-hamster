@@ -1,29 +1,32 @@
 #!/usr/bin/env bash
-set -euo pipefail
+set -e pipefail
 
-PROJECT_DIR=$(dirname "$0")/src
-BUILD_DIR=$(dirname "$0")/build
+BASEDIR=$(dirname "$0")
+SRC_DIR=$BASEDIR/src
+BUILD_DIR=$BASEDIR/build
+PATH=$PATH:$BASEDIR/.venv/bin
 
-echo "Cleaning build directory..."
+printf '\033[32mClean...\033[0m\n' >&2
 rm -rf "$BUILD_DIR"
 mkdir -p "$BUILD_DIR"
 
-echo "Compiling .py files to .mpy..."
-for f in "$PROJECT_DIR"/*.py; do
+for f in "$SRC_DIR"/*.py; do
     name=$(basename "$f" .py)
-    echo "  $f → $BUILD_DIR/$name.mpy"
+    if [ "$name" == "main" ]; then
+        continue
+    fi
+    printf "\033[32mCompiling $BUILD_DIR/$name.mpy\033[0m\n" >&2
     mpy-cross "$f" -o "$BUILD_DIR/$name.mpy"
 done
 
-echo "Uploading to MicroPython device..."
-mpremote connect auto fs mkdir /app || true
-
+# Clearing the device and uploading
+mpremote rm -rf :/ || true
+mpremote cp "$SRC_DIR/main.py" :/
 for f in "$BUILD_DIR"/*.mpy; do
-    echo "  Uploading $f"
-    mpremote connect auto fs cp "$f" :/app/
+    mpremote cp "$f" :/
 done
 
-echo "Setting main.py entrypoint..."
-mpremote connect auto fs cp main.py :main.py
+# Reset
+mpremote reset
 
-echo "Done."
+printf '\033[32mDeployment successful\033[0m\n' >&2
