@@ -16,14 +16,24 @@ print("Init TSC done")
 LVGL(LCD=LCD,TSC=TSC)
 print("Init LVGL done")
 
-pin = Pin("LED", Pin.OUT)
 
-print("LED starts flashing...")
-while True:
-    try:
-        pin.toggle()
-        sleep(1) # sleep 1sec
-    except KeyboardInterrupt:
-        break
-pin.off()
-print("Finished.")
+import lvgl as lv
+
+W = 240
+H = 240
+
+# Allocate RAM buffer
+buf = bytearray(W * H * 2)
+
+# Load raw RGB565 file into buffer
+with open("/resources/hamster_main.rgb565", "rb") as f:
+    f.readinto(buf)
+
+scr = lv.obj()
+
+# Create a canvas using RGB565
+canvas = lv.canvas(scr)
+canvas.set_buffer(buf, W, H, lv.COLOR_FORMAT.RGB565)
+canvas.center()
+
+lv.screen_load(scr)

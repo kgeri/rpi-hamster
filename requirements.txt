@@ -10,6 +10,7 @@ mpy_cross==1.26.1.post2
 packaging==25.0
 parse==1.20.2
 parse_type==0.6.6
+pillow==12.0.0
 platformdirs==4.5.0
 pluggy==1.6.0
 Pygments==2.19.2
