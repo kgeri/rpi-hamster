@@ -29,9 +29,9 @@ for d in $(find "$SRC_DIR" -type d ! -name __pycache__); do
                 continue
             fi
             mpy-cross "$f" -o "$BUILD_DIR$dir/$name.mpy"
-        elif [[ "$f" == *.gif ]]; then
+        elif [[ "$f" == *.jpg ]]; then
             # Converting and deploying images
-            name=$(basename "$f" .gif)
+            name=$(basename "$f" .jpg)
             cat "$f" | $BASEDIR/scripts/rgb565.py > "$BUILD_DIR$dir/$name.rgb565"
         fi
     done
