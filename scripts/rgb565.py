@@ -21,9 +21,9 @@ def main():
         for x in range(width):
             r, g, b = img.getpixel((x, y))
             rgb565 = rgb888_to_rgb565(r, g, b)
-            # write little-endian (LVGL expects this for raw565)
-            out.append(rgb565 & 0xFF)
-            out.append((rgb565 >> 8) & 0xFF)
+            # Waveshare LCD raw buffer apparently expect BIG Endian
+            out.append((rgb565 >> 8) & 0xFF)  # high first
+            out.append(rgb565 & 0xFF)         # low second
 
     # Output raw RGB565 bytes to stdout
     sys.stdout.buffer.write(out)
