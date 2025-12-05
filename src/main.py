@@ -49,39 +49,41 @@ def detect_gentle(ax, ay, az, gx, gy, gz):
 
     return GENTLE_DEV_MIN < dev < SHAKE_ACCEL_DEV and g < SHAKE_GYRO
 
+def show_frame(frame_name):
+    with open(f"/resources/hamster_240_{frame_name}.rgb565", "rb") as f:
+        f.readinto(LCD.buffer)
+    LCD.show()
 
 qmi8658=QMI8658()
 last = time.ticks_ms()
-no_check_till = 0
+no_draw_till = 0
 emote = ''
+emote_before = ''
 while True:
     xyz=qmi8658.Read_XYZ()
     ax, ay, az = xyz[:3]
     gx, gy, gz = xyz[3:]
 
-    print(f'{ax}, {ay}, {az} | {gz}, {gy}, {gz}')
-
     now = time.ticks_ms()
     dt = time.ticks_diff(now, last) / 1000
     last = now
 
-    LCD.fill(LCD.black)
-    LCD.text(f'{ax:+.2f},{ay:+.2f},{az:+.2f}',20,80-3,LCD.white)
-    LCD.text(f'{gx:+.2f},{gy:+.2f},{gz:+.2f}',20,90-3,LCD.white)
-
-    if now > no_check_till:
-        if detect_drop(ax, ay, az, dt):
-            emote = 'OUCH!!'
-            no_check_till = now + 1000
-        elif detect_shake(ax, ay, az, gx, gy, gz):
-            emote = 'AAAA!!'
-            no_check_till = now + 1000
-        elif detect_gentle(ax, ay, az, gx, gy, gz):
-            emote = 'WHEEE!'
-            no_check_till = now + 1000
-        else:
-            emote = ''
-    LCD.write_text(emote,70,110,3,LCD.white)
+    if detect_drop(ax, ay, az, dt):
+        emote = 'dead'
+    elif detect_shake(ax, ay, az, gx, gy, gz):
+        emote = 'scared'
+    elif detect_gentle(ax, ay, az, gx, gy, gz):
+        emote = 'happy'
+    else:
+        emote = 'default'
     
-    LCD.show()
+    if emote_before != emote and now > no_draw_till:
+        show_frame(emote)
+        emote_before = emote
+        if emote == 'dead':
+            no_draw_till = now + 60000
+        elif emote == 'scared':
+            no_draw_till = now + 2000
+        else:
+            no_draw_till = now + 1000
     time.sleep_ms(10)
