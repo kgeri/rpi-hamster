@@ -1,5 +1,6 @@
 from lib.LCD_1inch28 import LCD_1inch28
 from lib.QMI8658 import QMI8658
+from lib.Touch_CST816T import Touch_CST816T
 import time, math
 
 
@@ -55,6 +56,11 @@ def show_frame(frame_name):
     LCD.show()
 
 qmi8658=QMI8658()
+
+Touch=Touch_CST816T(mode=1,LCD=LCD)
+Touch.Mode = 0
+Touch.Set_Mode(Touch.Mode)
+
 last = time.ticks_ms()
 no_draw_till = 0
 emote = ''
@@ -68,7 +74,13 @@ while True:
     dt = time.ticks_diff(now, last) / 1000
     last = now
 
-    if detect_drop(ax, ay, az, dt):
+    if Touch.Gestures == 0x01: # Up = feed
+        emote = 'eating'
+        Touch.Gestures = 0
+    elif Touch.Gestures == 0x02: # Down = pet
+        emote = 'content'
+        Touch.Gestures = 0
+    elif detect_drop(ax, ay, az, dt):
         emote = 'dead'
     elif detect_shake(ax, ay, az, gx, gy, gz):
         emote = 'scared'
@@ -82,6 +94,8 @@ while True:
         emote_before = emote
         if emote == 'dead':
             no_draw_till = now + 60000
+        elif emote == 'eating':
+            no_draw_till = now + 2000
         elif emote == 'scared':
             no_draw_till = now + 2000
         else:
