@@ -30,3 +30,11 @@
 
 * [Reset and Boot Sequence](https://docs.micropython.org/en/latest/reference/reset_boot.html)
 * [RP2 Quick Reference](https://docs.micropython.org/en/latest/rp2/quickref.html)
+
+## Accelerometer
+
+This is a [QMI8658](https://components.espressif.com/components/waveshare/qmi8658/versions/1.0.1/readme) 6-axis MEMS sensor, measuring acceleration and angular velocity.
+
+Axes are as follows:
+
+![axes](RP2350-Touch-LCD-1.28-axes.jpg)

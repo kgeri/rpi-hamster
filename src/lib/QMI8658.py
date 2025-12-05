@@ -6,9 +6,9 @@ I2C_SDL = 7
 I2C_RST = 22
 
 class QMI8658(object):
-    def __init__(self,address=0X6B,i2c_num=1,i2c_sda=I2C_SDA,i2c_scl=I2C_SDL,rst_pin=I2C_RST):
+    def __init__(self,address=0X6B):
         self._address = address
-        self._bus = I2C(id=i2c_num,scl=Pin(i2c_scl),sda=Pin(i2c_sda),freq=100_000) #Initialize I2C 
+        self._bus = I2C(id=1,scl=Pin(I2C_SDL),sda=Pin(I2C_SDA),freq=100_000)
         bRet=self.WhoAmI()
         if bRet :
             self.Read_Revision()
@@ -75,4 +75,3 @@ class QMI8658(object):
             xyz[i]=raw_xyz[i]/acc_lsb_div # (acc_lsb_div/1000.0)
             xyz[i+3]=raw_xyz[i+3]*1.0/gyro_lsb_div
         return xyz
-    
