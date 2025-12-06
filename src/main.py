@@ -1,7 +1,9 @@
 from lib.LCD_1inch28 import LCD_1inch28
 from lib.QMI8658 import QMI8658
 from lib.Touch_CST816T import Touch_CST816T
+from machine import ADC, PWM, Pin
 import time, math
+
 
 
 LCD = LCD_1inch28()
@@ -55,11 +57,27 @@ def show_frame(frame_name):
         f.readinto(LCD.buffer)
     LCD.show()
 
+# Sound - TODO move to lib
+piezo = PWM(Pin(16))    # GP15 is fine
+def beep(freq, ms):
+    piezo.freq(freq)
+    piezo.duty_u16(30000)   # loudness (0 - 65535)
+    time.sleep_ms(ms)
+    piezo.duty_u16(0)   # stop
+
 qmi8658=QMI8658()
 
 Touch=Touch_CST816T(mode=1,LCD=LCD)
 Touch.Mode = 0
 Touch.Set_Mode(Touch.Mode)
+
+# Battery voltage
+PIN_VBAT = 29
+Vbat= ADC(Pin(PIN_VBAT))
+v_bat = Vbat.read_u16()*3.3/65535 * 3
+
+print(f'Booted successfully, Vbat={v_bat:.2f}V')
+beep(2000, 200)
 
 last = time.ticks_ms()
 no_draw_till = 0
@@ -96,8 +114,10 @@ while True:
             no_draw_till = now + 60000
         elif emote == 'eating':
             no_draw_till = now + 2000
+            beep(1000, 500)
         elif emote == 'scared':
             no_draw_till = now + 2000
+            beep(3000, 500)
         else:
             no_draw_till = now + 1000
     time.sleep_ms(10)

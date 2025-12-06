@@ -38,3 +38,10 @@ This is a [QMI8658](https://components.espressif.com/components/waveshare/qmi865
 Axes are as follows:
 
 ![axes](RP2350-Touch-LCD-1.28-axes.jpg)
+
+## Sound
+
+I added a simple piezo [BPT-2312H05W](https://www.hestore.hu/prod_10032057.html) via the GPIO header:
+
+* `GND -> piezo-`
+* `GPIO 16 -> 100 ohm -> piezo+`
