@@ -1,4 +1,4 @@
-from lib.LCD_1inch28 import LCD_1inch28
+from waveshare.LCD_1inch28 import LCD_1inch28
 import time
 
 

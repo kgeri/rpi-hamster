@@ -1,5 +1,5 @@
-from lib.LCD_1inch28 import LCD_1inch28
-from lib.Touch_CST816T import Touch_CST816T
+from waveshare.LCD_1inch28 import LCD_1inch28
+from waveshare.Touch_CST816T import Touch_CST816T
 import time
 
 

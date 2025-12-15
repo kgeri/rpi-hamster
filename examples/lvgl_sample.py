@@ -1,6 +1,6 @@
-from lib.CST816T import Touch
-from lib.LCD_1in28 import LCD_1in28
-from lib.LVGL import LVGL
+from waveshare.CST816T import Touch
+from waveshare.LCD_1in28 import LCD_1in28
+from waveshare.LVGL import LVGL
 from machine import Pin
 from utime import sleep
 

@@ -1,6 +1,6 @@
 from datetime import datetime
 from pytest_bdd import scenarios, given, when, then, parsers
-from src.hamster import Hamster, HamsterState
+from examples.hamster import Hamster, HamsterState
 import pytest
 
 
