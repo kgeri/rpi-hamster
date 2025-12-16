@@ -1,4 +1,4 @@
-from lib.common import Gyro, LCD, Touch, Piezo
+from lib.common import Battery, Gyro, LCD, Touch, Piezo
 import math
 import time
 
@@ -6,8 +6,8 @@ import time
 TICK_MS = 10
 
 class HamsterSimulator:
-    def __init__(self, lcd: LCD, touch: Touch, gyro: Gyro, piezo: Piezo):
-        self.hamster = Hamster(lcd, touch, gyro, piezo)
+    def __init__(self, lcd: LCD, touch: Touch, gyro: Gyro, piezo: Piezo, battery: Battery):
+        self.hamster = Hamster(lcd, touch, gyro, piezo, battery)
     
     def loop(self):
         last = time.ticks_ms()
@@ -17,7 +17,9 @@ class HamsterSimulator:
             
             self.hamster.simulate(dt_ms)
             self.hamster.player.next_tune(now)
-            self.hamster.face.next_face(now)
+            self.hamster.face.draw_face(now)
+            self.hamster.face.draw_battery_status()
+            self.hamster.face.show()
             
             last = now
             time.sleep_ms(TICK_MS)
@@ -70,13 +72,14 @@ SOUND_EEEK = bytes((
 ))
 
 class Face:
-    def __init__(self, lcd: LCD):
+    def __init__(self, lcd: LCD, battery: Battery):
         self.lcd = lcd
+        self.battery = battery
         self.start_at = 0
         self.reset_at = 0
         self.face_id = "default"
     
-    def show_face(self, face_id: str, duration_ms, override=False, delay_ms = 0):
+    def set_next_face(self, face_id: str, duration_ms, override=False, delay_ms = 0):
         now = time.ticks_ms()
         if not override and now < self.reset_at:
             return # Previous face still showing
@@ -85,23 +88,32 @@ class Face:
         self.reset_at = now + delay_ms + duration_ms
         self.face_id = face_id
 
-    def next_face(self, current_time):
+    def draw_face(self, current_time):
         if not self.face_id:
             return
         if current_time >= self.reset_at:
-            self._load_and_show("default")
+            self._load_face("default")
             self.face_id = None
         elif current_time >= self.start_at:
-            self._load_and_show(self.face_id)
+            self._load_face(self.face_id)
     
-    def _load_and_show(self, face_id: str):
-        with open(f"/resources/hamster_240_{face_id}.rgb565", "rb") as f:
-            f.readinto(self.lcd.buffer)
+    def draw_battery_status(self):
+        v = self.battery.read_voltage()
+        b = self.battery.battery_pcnt()
+        text = f"USB ({v:.2f}V)" if self.battery.is_charging() else f"{b}% ({v:.2f}V)"
+        self.lcd.fill_rect(0, 220-2, 240, 12+2, 0x00FF00)
+        self.lcd.text(text, 80, 220, 0xFFFFFF)
+
+    def show(self):
         self.lcd.show()
 
+    def _load_face(self, face_id: str):
+        with open(f"/resources/hamster_240_{face_id}.rgb565", "rb") as f:
+            f.readinto(self.lcd.buffer)
+
 class Hamster:
-    def __init__(self, lcd: LCD, touch: Touch, gyro: Gyro, piezo: Piezo):
-        self.face = Face(lcd)
+    def __init__(self, lcd: LCD, touch: Touch, gyro: Gyro, piezo: Piezo, battery: Battery):
+        self.face = Face(lcd, battery)
         self.touch = touch
         self.gyro = gyro
         self.player = PiezoPlayer(piezo)
@@ -117,19 +129,19 @@ class Hamster:
         # Check gestures
         gesture = self.touch.gesture
         if gesture == Touch.UP: # Up -> feed
-            self.face.show_face("eating", 1000)
+            self.face.set_next_face("eating", 1000)
         elif gesture == Touch.DOWN: # Down -> pet
-            self.face.show_face("cotnent", 1000)
+            self.face.set_next_face("cotnent", 1000)
         
         # Check gyro
         ax, ay, az, gx, gy, gz = self.gyro.read_axyz_gxyz()
         if self.detect_drop(ax, ay, az, dt_ms): # Dropped -> dead
-            self.face.show_face("dead", 60000, override=True)
+            self.face.set_next_face("dead", 60000, override=True)
         elif self.detect_shake(ax, ay, az, gx, gy, gz): # Shaken -> scared
             self.player.play(SOUND_EEEK)
-            self.face.show_face("scared", 2000, override=True)
+            self.face.set_next_face("scared", 2000, override=True)
         elif self.detect_gentle(ax, ay, az, gx, gy, gz): # Gently moved -> happy
-            self.face.show_face("happy", 2000)
+            self.face.set_next_face("happy", 2000)
     
     def detect_drop(self, ax: float, ay: float, az: float, dt_ms: int) -> bool:
         a = math.sqrt(ax*ax + ay*ay + az*az)

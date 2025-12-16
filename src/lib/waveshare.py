@@ -1,12 +1,12 @@
 # Source: https://files.waveshare.com/wiki/RP2350-Touch-LCD-1.28/RP2350-Touch-LCD-1.28.zip
 # Code and docs cleaned up
 
-from machine import Pin, I2C, SPI, PWM
+from machine import ADC, I2C, Pin, PWM, SPI
 from framebuf import FrameBuffer, RGB565
 import time
 
 
-class LCD_WS_RP2350(FrameBuffer):
+class LCD_GC9A01A(FrameBuffer):
     """Round LCD, 1.28 inch, touch-capable"""
 
     def __init__(self): # SPI initialization
@@ -430,3 +430,22 @@ class Piezo_WS_RP2350:
     def beep(self, freq: int, volume: int):
         self.piezo.freq(freq)
         self.piezo.duty_u16(65535 * volume // 100) # loudness (0 - 65535)
+
+class Battery_WS_RP2350:
+    """Battery status for WS-2350"""
+
+    def __init__(self):
+        self.vbat_adc = ADC(Pin(29))
+
+    def read_voltage(self) -> float:
+        return self.vbat_adc.read_u16() * 3.3 / 65535 * 3
+    
+    def battery_pcnt(self) -> int:
+        v = self.read_voltage()
+        if v >= 4.2: return 100
+        elif v <= 3.0: return 0
+        return int((v - 3.0) / (4.2 - 3.0) * 100)
+    
+    def is_charging(self) -> bool:
+        v = self.read_voltage()
+        return v > 4.3 # This is not documented, but testing shows that GPIO29 measures the USB rail when it's connected, and the battery otherwise

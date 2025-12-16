@@ -7,6 +7,12 @@ class LCD(Protocol):
     def set_brightness(self, percentage: int):
         pass
 
+    def text(self, s: str, x: int, y: int, c: int = 1, /) -> None:
+        pass
+
+    def fill_rect(self, *args, **kwargs):
+        pass
+
     def show(self) -> None:
         pass
 
@@ -26,4 +32,14 @@ class Gyro(Protocol):
 
 class Piezo(Protocol):
     def beep(self, freq: int, volume: int) -> None:
+        pass
+
+class Battery(Protocol):
+    def read_voltage(self) -> float:
+        pass
+
+    def battery_pcnt(self) -> int:
+        pass
+
+    def is_charging(self) -> bool:
         pass
