@@ -1,8 +1,9 @@
 # Source: https://files.waveshare.com/wiki/RP2350-Touch-LCD-1.28/RP2350-Touch-LCD-1.28.zip
 # Code and docs cleaned up
 
-from machine import ADC, I2C, Pin, PWM, SPI
 from framebuf import FrameBuffer, RGB565
+from lib.logging import LOG
+from machine import ADC, I2C, Pin, PWM, SPI
 import time
 
 
@@ -376,11 +377,13 @@ class Gyro_QMI8658:
 
     def read_axyz_gxyz(self) -> list[float]:
         xyz=[0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-        raw_xyz=self._read_raw_xyz()
-        for i in range(3):
-            xyz[i] = raw_xyz[i] / Gyro_QMI8658._ACC_LSB_DIV
-            xyz[i+3] = raw_xyz[i+3] / Gyro_QMI8658._GYRO_LSB_DIV
-        # print(xyz) # Debug
+        try:
+            raw_xyz=self._read_raw_xyz()
+            for i in range(3):
+                xyz[i] = raw_xyz[i] / Gyro_QMI8658._ACC_LSB_DIV
+                xyz[i+3] = raw_xyz[i+3] / Gyro_QMI8658._GYRO_LSB_DIV
+        except OSError as e:
+            LOG.write("[QMI8658] Failed to read gyro: ", e)
         return xyz
 
     def _init_gyro(self):
