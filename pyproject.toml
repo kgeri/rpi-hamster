@@ -1,0 +1,6 @@
+[tool.pytest.ini_options]
+# Add 'src' to the path so 'import lib' works
+pythonpath = ["src"]
+
+# Tell pytest where to look for tests
+testpaths = ["test"]
