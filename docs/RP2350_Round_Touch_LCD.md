@@ -45,3 +45,10 @@ I added a simple piezo [BPT-2312H05W](https://www.hestore.hu/prod_10032057.html)
 
 * `GND -> piezo-`
 * `GPIO 16 -> 100 ohm -> piezo+`
+
+## Battery
+
+The battery I used is an [Akyga AKY0081 / LP573450 980mAh](https://www.hestore.hu/prod_10048166.html). Measured:
+
+* USB rail: -4.61 V
+* Battery: -3.99 V
