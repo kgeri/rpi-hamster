@@ -20,12 +20,14 @@ class RingBuffer:
         self.pos = 0
     
     def write(self, *args, end="\n"):
-        self._write(self.clock())
+        now_ms = self.clock()
+        self._write(now_ms)
         self._write(" ")
         for arg in args:
             self._write(arg)
         if end:
             self._write(end)
+        print(now_ms, " ", *args, sep="", end=end)
 
     def _write(self, arg):
         if isinstance(arg, bytes):
@@ -47,8 +49,6 @@ class RingBuffer:
             self.buffer[pos:length] = b[0:split_pos]
             self.buffer[0:new_end_pos] = b[split_pos:]
             self.pos = new_end_pos
-        
-        sys.stderr.buffer.write(b)
 
     def dump_to_file(self, path: str, exc: Exception|None=None):
         with open(path, 'wb') as f:
