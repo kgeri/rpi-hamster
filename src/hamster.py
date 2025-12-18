@@ -26,11 +26,11 @@ class Hamster:
     def _simulate(self, now_ms: int):
         
         # Check gestures
-        gesture = self.touch.gesture
+        gesture = self.touch.get_gesture()
         if gesture == Touch.UP: # Up -> feed
             self.face.set_next_face("eating", now_ms, 1000)
         elif gesture == Touch.DOWN: # Down -> pet
-            self.face.set_next_face("cotnent", now_ms, 1000)
+            self.face.set_next_face("content", now_ms, 1000)
         
         # Check gyro
         ax, ay, az, gx, gy, gz = self.gyro.read_axyz_gxyz()

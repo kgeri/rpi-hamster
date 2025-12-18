@@ -24,8 +24,9 @@ class Touch:
     DOUBLE_TAP = 0x0B
     LONG_PRESS = 0x0C
 
-    gesture: int
-    """Direction of the gesture"""
+    def get_gesture(self) -> int:
+        """Direction of the gesture"""
+        raise NotImplementedError
 
 class Gyro:
     def read_axyz_gxyz(self) -> list[int]:

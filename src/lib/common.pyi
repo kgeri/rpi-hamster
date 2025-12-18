@@ -24,7 +24,8 @@ class Touch(Protocol):
     DOUBLE_TAP = 0x0B
     LONG_PRESS = 0x0C
 
-    gesture: int
+    def get_gesture(self) -> int:
+        pass
 
 class Gyro(Protocol):
     def read_axyz_gxyz(self) -> list[float]:

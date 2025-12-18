@@ -50,5 +50,7 @@ I added a simple piezo [BPT-2312H05W](https://www.hestore.hu/prod_10032057.html)
 
 The battery I used is an [Akyga AKY0081 / LP573450 980mAh](https://www.hestore.hu/prod_10048166.html). Measured:
 
-* USB rail: -4.61 V
-* Battery: -3.99 V
+* USB rail: 4.24-4.61V
+* Battery: 3.28-3.99V
+
+Interestingly, when the battery goes down, the screen will go off first but the CPU keeps running (gyro was working, piezo was making a sound)

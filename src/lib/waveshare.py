@@ -344,6 +344,11 @@ class Touch_CST816T:
         # Setting Gestures mode 
         self._write_byte(0xFA,0X11)
         self._write_byte(0xEC,0X01)
+    
+    def get_gesture(self) -> int:
+        gesture = self.gesture
+        self.gesture = 0
+        return gesture
 
     def _read_byte(self,cmd) -> int:
         rec = self._bus.readfrom_mem(self._address, int(cmd), 1)
