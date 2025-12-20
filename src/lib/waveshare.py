@@ -441,19 +441,27 @@ class Piezo_WS_RP2350:
 
 class Battery_WS_RP2350:
     """Battery status for WS-2350"""
+    # Lowest / highest voltages I measured on my PC (this should vary depending on the port/cable/etc.)
+    _USB_LOW = 4.24
+    _USB_HIGH = 4.61
+    # Lowest / highest voltages I've measured with Akyga AKY0081
+    _BATTERY_LOW = 3.28
+    _BATTERY_HIGH = 3.99
 
     def __init__(self):
         self.vbat_adc = ADC(Pin(29))
 
     def read_voltage(self) -> float:
         return self.vbat_adc.read_u16() * 3.3 / 65535 * 3
-    
+
     def battery_pcnt(self) -> int:
         v = self.read_voltage()
-        if v >= 4.2: return 100
-        elif v <= 3.0: return 0
-        return int((v - 3.0) / (4.2 - 3.0) * 100)
-    
+        if v >= Battery_WS_RP2350._USB_LOW and v > Battery_WS_RP2350._BATTERY_HIGH:
+            return int((v - Battery_WS_RP2350._USB_LOW) * 100 / (Battery_WS_RP2350._USB_HIGH - Battery_WS_RP2350._USB_LOW))
+        else:
+            return int((v - Battery_WS_RP2350._BATTERY_LOW) * 100 / (Battery_WS_RP2350._BATTERY_HIGH - Battery_WS_RP2350._BATTERY_LOW))
+
     def is_charging(self) -> bool:
         v = self.read_voltage()
-        return v > 4.3 # This is not documented, but testing shows that GPIO29 measures the USB rail when it's connected, and the battery otherwise
+        # This is not documented, but testing shows that GPIO29 measures the USB rail when it's connected, and the battery voltage otherwise
+        return v >= Battery_WS_RP2350._USB_LOW

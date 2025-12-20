@@ -33,7 +33,7 @@ try:
         TICK_MS
     )
     while True:
-        hs.tick(time.ticks_ms())
+        hs.tick(time.ticks_ms(), t)
         time.sleep_ms(TICK_MS)
         
         if t % 1000 == 0:

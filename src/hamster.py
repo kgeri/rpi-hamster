@@ -3,6 +3,8 @@ import math
 
 
 class Hamster:
+    MAX_BRIGHTNESS = 100
+
     def __init__(self, lcd: LCD, touch: Touch, gyro: Gyro, piezo: Piezo, battery: Battery, now_ms: int, tick_ms: int):
         self.face = Face(lcd, battery)
         self.touch = touch
@@ -12,14 +14,15 @@ class Hamster:
         self.freefall_started_at = 0
 
         # Initial state
-        lcd.set_brightness(60)
+        lcd.set_brightness(Hamster.MAX_BRIGHTNESS)
         self.player.play(now_ms, SOUND_HELLO)
     
-    def tick(self, now_ms: int):
+    def tick(self, now_ms: int, tick: int):
         self._simulate(now_ms)
         self.player.next_tune(now_ms)
         self.face.draw_face(now_ms)
-        self.face.draw_battery_status()
+        if tick % 100 == 0:
+            self.face.draw_battery_status()
         self.face.show()
         self.last_tick_ms = now_ms
     
@@ -147,11 +150,12 @@ class Face:
             self._load_face(self.face_id)
     
     def draw_battery_status(self):
-        v = self.battery.read_voltage()
         b = self.battery.battery_pcnt()
-        text = f"USB ({v:.2f}V)" if self.battery.is_charging() else f"{b}% ({v:.2f}V)"
-        self.lcd.fill_rect(0, 220-2, 240, 12+2, 0x00FF00)
-        self.lcd.text(text, 80, 220, 0xFFFFFF)
+        if self.battery.is_charging():
+            self.lcd.fill_rect(0, 220-2, 240, 12+2, 0x000000)
+            self.lcd.text(f"{b}%", 80, 220, 0xFFFFFF)
+        else:
+            self.lcd.set_brightness(int(Hamster.MAX_BRIGHTNESS * b / 100))
 
     def show(self):
         self.lcd.show()
