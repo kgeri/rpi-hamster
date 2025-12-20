@@ -36,9 +36,6 @@ class Piezo(Protocol):
         pass
 
 class Battery(Protocol):
-    def read_voltage(self) -> float:
-        pass
-
     def battery_pcnt(self) -> int:
         pass
 

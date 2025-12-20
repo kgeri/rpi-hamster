@@ -39,10 +39,6 @@ class Piezo:
         raise NotImplementedError
 
 class Battery:
-    def read_voltage(self) -> float:
-        """Returns the measured battery or USB rail voltage"""
-        raise NotImplementedError
-
     def battery_pcnt(self) -> int:
         """Returns the estimated battery percentage (0-100)"""
         raise NotImplementedError

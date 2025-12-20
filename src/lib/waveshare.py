@@ -379,17 +379,9 @@ class Gyro_QMI8658:
             raise RuntimeError("Not Detected QMI8658 chip")
         
         self._init_gyro()
+        self.raw_axyz_gxyz = [0, 0, 0, 0, 0, 0]
+        self.axyz_gxyz_ema = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 
-    def read_axyz_gxyz(self) -> list[float]:
-        xyz=[0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-        try:
-            raw_xyz=self._read_raw_xyz()
-            for i in range(3):
-                xyz[i] = raw_xyz[i] / Gyro_QMI8658._ACC_LSB_DIV
-                xyz[i+3] = raw_xyz[i+3] / Gyro_QMI8658._GYRO_LSB_DIV
-        except OSError as e:
-            LOG.write("[QMI8658] Failed to read gyro: ", e)
-        return xyz
 
     def _init_gyro(self):
         # REG CTRL1
@@ -418,16 +410,31 @@ class Gyro_QMI8658:
     def _write_byte(self,cmd,val) -> None:
         self._bus.writeto_mem(Gyro_QMI8658._ADDRESS, int(cmd), bytes([int(val)]))
 
-    def _read_raw_xyz(self) -> list[int]:
-        xyz=[0,0,0,0,0,0]
+    def read_axyz_gxyz(self) -> list[float]:
+        try:
+            raw = self._read_raw_axyz_gxyz()
+            for i in range(3):
+                a = raw[i] / Gyro_QMI8658._ACC_LSB_DIV
+                g = raw[i+3] / Gyro_QMI8658._GYRO_LSB_DIV
+                
+                # Exponential moving average with alpha=0.2 (N=9)
+                self.axyz_gxyz_ema[i] = ema(self.axyz_gxyz_ema[i], 0.2, a)
+                self.axyz_gxyz_ema[i+3] = ema(self.axyz_gxyz_ema[i], 0.2, g)
+        except OSError as e:
+            LOG.write("[QMI8658] Failed to read gyro: ", e)
+        # print(f"Gyro: {self.axyz_gxyz_ema}") # DEBUG
+        return self.axyz_gxyz_ema
+
+    def _read_raw_axyz_gxyz(self) -> list[int]:
         # raw_timestamp = self._read_block(0x30,3)
         # timestamp = (raw_timestamp[2]<<16)|(raw_timestamp[1]<<8)|(raw_timestamp[0])
         raw_xyz = self._read_block(0x35,12)
         for i in range(6):
-            xyz[i] = (raw_xyz[(i*2)+1]<<8)|(raw_xyz[i*2])
-            if xyz[i] >= 32767:
-                xyz[i] = xyz[i]-65535
-        return xyz
+            v = (raw_xyz[(i*2)+1]<<8)|(raw_xyz[i*2])
+            if v >= 32767:
+                v = v-65535
+            self.raw_axyz_gxyz[i] = v
+        return self.raw_axyz_gxyz
 
 class Piezo_WS_RP2350:
     """A simple piezo I added to WS-2350"""
@@ -450,18 +457,32 @@ class Battery_WS_RP2350:
 
     def __init__(self):
         self.vbat_adc = ADC(Pin(29))
+        self.v_ema = self._read_voltage()
 
-    def read_voltage(self) -> float:
+    def _read_voltage(self) -> float:
         return self.vbat_adc.read_u16() * 3.3 / 65535 * 3
+    
+    def _update_voltage_ema(self) -> float:
+        v = self._read_voltage()
+        self.v_ema = ema(self.v_ema, 0.04, v) # Exponential moving average with alpha=0.04 (N=50)
+        return self.v_ema
 
     def battery_pcnt(self) -> int:
-        v = self.read_voltage()
+        v = self._update_voltage_ema()
+        # print(f"VBat: {v:.2f}") # DEBUG
         if v >= Battery_WS_RP2350._USB_LOW and v > Battery_WS_RP2350._BATTERY_HIGH:
             return int((v - Battery_WS_RP2350._USB_LOW) * 100 / (Battery_WS_RP2350._USB_HIGH - Battery_WS_RP2350._USB_LOW))
         else:
             return int((v - Battery_WS_RP2350._BATTERY_LOW) * 100 / (Battery_WS_RP2350._BATTERY_HIGH - Battery_WS_RP2350._BATTERY_LOW))
 
     def is_charging(self) -> bool:
-        v = self.read_voltage()
         # This is not documented, but testing shows that GPIO29 measures the USB rail when it's connected, and the battery voltage otherwise
-        return v >= Battery_WS_RP2350._USB_LOW
+        return self.v_ema >= Battery_WS_RP2350._USB_LOW
+
+def ema(current_ema: float, alpha: float, next_value: float) -> float:
+    """Calculates the exponential moving average.
+    current_ema: the previously computed moving average
+    alpha: the smoothing factor. To have it behave like a window of N, use: alpha ≈ 2 / (N + 1)
+    next_value: the value to add to the moving average
+    """
+    return current_ema + alpha * (next_value - current_ema)

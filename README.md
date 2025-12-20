@@ -9,14 +9,14 @@ Like 90's Tamagotchi, the purpose is to teach my son about the difficulties and 
 * [✔️] Touch detection (pet and feed)
 * [✔️] Gyro detection (scared, happy, dropped)
 * [✔️] Piezo sounds (welcome, squeak)
-* [✔️] Battery indicator (voltage, primitive charging detection)
+* [✔️] Battery indicator (voltage, primitive charging detection, calibrated)
 * [✔️] GC watchdog and error.log ([RingBuffer](src/lib/logging.py))
-* [❌] Calibrate battery percentage, battery menu (?)
 * [❌] Improve gyro / drop detection (multi-sample)
 * [❌] Power saving mode, wake up on use
 * [❌] Sleep schedule, wake up at night
 * [❌] Cage cleaning reminder?
 * [❌] Documented build, body
+* [❌] Battery menu (?)
 
 ## Hardware
 
