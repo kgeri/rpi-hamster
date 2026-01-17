@@ -1,31 +1,18 @@
-Feature: Hamster behavior
-  Verify hamster energy/weight and state changes
+Feature: Hamster reactions
+  Verify hamster reacts to physical interactions
 
-  Scenario: Fat hamsters die
-    Given a hamster with energy=150 weight=250
-    When 1 hours pass
-    Then hamster has energy=100 weight=200
-    Then hamster is DEAD
+  Scenario: When dropped, hamster dies
+    When the hamster is dropped
+    Then hamster face is dead
 
-  Scenario: Starving hamsters die
-    Given a hamster with energy=50 weight=0
-    When 1 hours pass
-    Then hamster is DEAD
+  Scenario: When shaken, hamster gets scared
+    When the hamster is shaken
+    Then hamster face is scared
 
-  Scenario: Hamster is running when it can
-    Given a hamster with energy=80 weight=100
-    And the time is 23:00
-    When 1 hours pass
-    Then hamster is RUNNING
+  Scenario: When swiped up, hamster is eating
+    When the hamster is swiped up
+    Then hamster face is eating
 
-  Scenario: Hamster falls asleep when tired
-    Given a hamster with energy=10 weight=100
-    When 1 hours pass
-    Then hamster is SLEEPING
-
-  Scenario: Hamster gets tired while running
-    Given a hamster with energy=80 weight=100
-    And hamster is RUNNING
-    And the time is 23:00
-    When 1 hours pass
-    Then hamster has energy=63 weight=100
+  Scenario: When swiped down (pet), hamster is content
+    When the hamster is swiped down
+    Then hamster face is content

@@ -1,45 +1,69 @@
-from datetime import datetime
-from pytest_bdd import scenarios, given, when, then, parsers
-from examples.hamster import Hamster, HamsterState
 import pytest
+from pytest_bdd import scenarios, when, then
+from unittest.mock import patch, MagicMock
+from src.hamster import Hamster
+from mocks import MockLCD, MockTouch, MockGyro, MockPiezo, MockBattery
 
 
 scenarios('../features/hamster.feature')
 
 
-class ConcreteHamster(Hamster):
-    def squeak(self):
-        return "squeak"
-
-@given(parsers.parse('a hamster with energy={energy} weight={weight}'), target_fixture="hamster")
-def hamster_energy_weight(energy, weight):
-    h = ConcreteHamster(epoch_seconds=0)
-    h.energy = float(energy)
-    h._initial_energy = float(energy)
-    h.weight = float(weight)
-    h.last_update = 0
+@pytest.fixture
+def hamster():
+    lcd = MockLCD()
+    touch = MockTouch()
+    gyro = MockGyro()
+    piezo = MockPiezo()
+    battery = MockBattery()
+    with patch('builtins.open', MagicMock()):
+        h = Hamster(lcd, touch, gyro, piezo, battery, now_ms=0, tick_ms=10)
     return h
 
-@given(parsers.parse('the time is {hours}:{minutes}'))
-def the_time_is(hamster, hours, minutes):
-    today = datetime.today()
-    dt = datetime(today.year, today.month, today.day, int(hours), int(minutes), 0)
-    hamster.last_update = int(dt.timestamp())
 
-@given(parsers.parse('hamster is {state}'))
-def given_hamster_is(hamster, state):
-    hamster.state = HamsterState[state]
+@when('the hamster is dropped')
+def hamster_is_dropped(hamster):
+    hamster.gyro._values = [0.1, 0.1, 0.1, 0, 0, 0]
+    with patch('builtins.open', MagicMock()):
+        hamster.tick(now_ms=1000, tick=0)
+        hamster.tick(now_ms=1050, tick=1)
 
-@when(parsers.parse('{hours} hours pass'))
-def seconds_pass(hamster, hours):
-    epoch_seconds = int(getattr(hamster, "last_update", 0) + int(hours) * 3600)
-    hamster.on_time(epoch_seconds)
 
-@then(parsers.parse('hamster has energy={energy} weight={weight}'))
-def hamster_has_values(hamster, energy, weight):
-    assert hamster.energy == pytest.approx(float(energy), rel=0.5)
-    assert hamster.weight == pytest.approx(float(weight), rel=0.5)
+@when('the hamster is shaken')
+def hamster_is_shaken(hamster):
+    hamster.gyro._values = [0.5, 0.5, 1.5, 300, 0, 0]
+    with patch('builtins.open', MagicMock()):
+        hamster.tick(now_ms=100, tick=0)
 
-@then(parsers.parse('hamster is {state}'))
-def then_hamster_is(hamster, state):
-    assert hamster.state == HamsterState[state]
+
+@when('the hamster is swiped up')
+def hamster_is_swiped_up(hamster):
+    hamster.touch._gesture = MockTouch.UP
+    with patch('builtins.open', MagicMock()):
+        hamster.tick(now_ms=100, tick=0)
+
+
+@when('the hamster is swiped down')
+def hamster_is_swiped_down(hamster):
+    hamster.touch._gesture = MockTouch.DOWN
+    with patch('builtins.open', MagicMock()):
+        hamster.tick(now_ms=100, tick=0)
+
+
+@then('hamster face is dead')
+def hamster_face_is_dead(hamster):
+    assert hamster.face.face_id == "dead"
+
+
+@then('hamster face is scared')
+def hamster_face_is_scared(hamster):
+    assert hamster.face.face_id == "scared"
+
+
+@then('hamster face is eating')
+def hamster_face_is_eating(hamster):
+    assert hamster.face.face_id == "eating"
+
+
+@then('hamster face is content')
+def hamster_face_is_content(hamster):
+    assert hamster.face.face_id == "content"
