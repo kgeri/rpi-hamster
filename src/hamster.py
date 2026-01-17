@@ -35,19 +35,19 @@ class Hamster:
         # Check gestures
         gesture = self.touch.get_gesture()
         if gesture == Touch.UP: # Up -> feed
-            self.face.set_next_face("eating", now_ms, 1000)
+            self.face.set_next_face("eating", now_ms, 1000, 1)
         elif gesture == Touch.DOWN: # Down -> pet
-            self.face.set_next_face("content", now_ms, 1000)
+            self.face.set_next_face("content", now_ms, 1000, 1)
         
         # Check gyro
         ax, ay, az, gx, gy, gz = self.gyro.read_axyz_gxyz()
         if self.detect_drop(ax, ay, az, now_ms): # Dropped -> dead
-            self.face.set_next_face("dead", now_ms, 60000, override=True)
+            self.face.set_next_face("dead", now_ms, 60000, 10)
         elif self.detect_shake(ax, ay, az, gx, gy, gz): # Shaken -> scared
             self.player.play(now_ms, SOUND_EEEK)
-            self.face.set_next_face("scared", now_ms, 2000, override=True)
+            self.face.set_next_face("scared", now_ms, 2000, 5)
         elif self.detect_gentle(ax, ay, az, gx, gy, gz): # Gently moved -> happy
-            self.face.set_next_face("happy", now_ms, 2000)
+            self.face.set_next_face("happy", now_ms, 2000, 1)
     
     def detect_drop(self, ax: float, ay: float, az: float, now_ms: int) -> bool:
         mag2 = ax*ax + ay*ay + az*az
@@ -134,14 +134,16 @@ class Face:
         self.start_at = 0
         self.reset_at = 0
         self.face_id = "default"
+        self.current_priority = 0
     
-    def set_next_face(self, face_id: str, now_ms: int, duration_ms: int, override=False, delay_ms = 0):
-        if not override and now_ms < self.reset_at:
-            return # Previous face still showing
+    def set_next_face(self, face_id: str, now_ms: int, duration_ms: int, delay_ms=0, priority = 0):
+        if priority < self.current_priority:
+            return
         
         self.start_at = now_ms + delay_ms
         self.reset_at = now_ms + delay_ms + duration_ms
         self.face_id = face_id
+        self.current_priority = priority
 
     def draw_face(self, now_ms):
         if not self.face_id:
@@ -149,6 +151,7 @@ class Face:
         if now_ms >= self.reset_at:
             self._load_face("default")
             self.face_id = None
+            self.current_priority = 0
         elif now_ms >= self.start_at:
             self._load_face(self.face_id)
     
