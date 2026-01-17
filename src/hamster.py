@@ -1,4 +1,4 @@
-from lib.common import Battery, Gyro, LCD, Touch, Piezo
+from lib.common import Battery, Gyro, LCD, Touch, Piezo, ticks_diff
 import math
 
 
@@ -11,7 +11,6 @@ class Hamster:
         self.gyro = gyro
         self.player = PiezoPlayer(piezo, tick_ms)
         self.battery = battery
-
         self.freefall_started_at = 0
 
         # Initial state
@@ -51,17 +50,13 @@ class Hamster:
     
     def detect_drop(self, ax: float, ay: float, az: float, now_ms: int) -> bool:
         mag2 = ax*ax + ay*ay + az*az
-        if mag2 >= 0.25: # >= (0.5g)^2 -> not freefall
-            self.freefall_started_at = 0
-            return False
-        elif not self.freefall_started_at: # Freefall just started
-            self.freefall_started_at = now_ms
-            return False
-        elif now_ms - self.freefall_started_at < 30: # Freefalling but not enough yet
-            return False
-        else:
-            self.freefall_started_at = 0 # Hamster's doomed
-            return True
+        print(f"Gyro[{now_ms}][{self.freefall_started_at}][{ticks_diff(now_ms, self.freefall_started_at)}]: {ax} {ay} {az} => {mag2}") # DEBUG
+        if mag2 >= 1.5: # Hamster's falling
+            if self.freefall_started_at == 0:
+                self.freefall_started_at = now_ms
+            return ticks_diff(now_ms, self.freefall_started_at) > 100 # Hamster's doomed
+        self.freefall_started_at = 0
+        return False
 
     BASELINE_A = 1.018      # 1.018 is a baseline computed while still, could determine it dynamically
     SHAKE_ACCEL_DEV = 0.15  # deviation from gravity (g)
@@ -136,7 +131,7 @@ class Face:
         self.face_id = "default"
         self.current_priority = 0
     
-    def set_next_face(self, face_id: str, now_ms: int, duration_ms: int, delay_ms=0, priority = 0):
+    def set_next_face(self, face_id: str, now_ms: int, duration_ms: int, priority: int, delay_ms=0):
         if priority < self.current_priority:
             return
         

@@ -11,7 +11,7 @@ Like 90's Tamagotchi, the purpose is to teach my son about the difficulties and 
 * [✔️] Piezo sounds (welcome, squeak)
 * [✔️] Battery indicator (voltage, primitive charging detection, calibrated)
 * [✔️] GC watchdog and error.log ([RingBuffer](src/lib/logging.py))
-* [❌] Improve gyro / drop detection (multi-sample)
+* [✔️] Improved gyro / drop detection (multi-sample, using EMA)
 * [❌] Power saving mode, wake up on use
 * [❌] Sleep schedule, wake up at night
 * [❌] Cage cleaning reminder?

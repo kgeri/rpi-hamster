@@ -22,10 +22,10 @@ def hamster():
 
 @when('the hamster is dropped')
 def hamster_is_dropped(hamster):
-    hamster.gyro._values = [0.1, 0.1, 0.1, 0, 0, 0]
+    hamster.gyro._values = [1.0, 1.0, 1.0, 0, 0, 0]  # mag2 = 3.0 >= 1.5
     with patch('builtins.open', MagicMock()):
         hamster.tick(now_ms=1000, tick=0)
-        hamster.tick(now_ms=1050, tick=1)
+        hamster.tick(now_ms=1110, tick=1)  # > 100ms after start
 
 
 @when('the hamster is shaken')

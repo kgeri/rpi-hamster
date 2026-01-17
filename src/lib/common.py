@@ -1,3 +1,7 @@
+import time
+
+
+ticks_diff = time.ticks_diff if hasattr(time, 'ticks_ms') else lambda t1, t2: t1 - t2
 
 class LCD:
     buffer: bytearray
